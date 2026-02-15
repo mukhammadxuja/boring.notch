@@ -1032,6 +1032,8 @@ struct PomodoroSettings: View {
     @Default(.pomodoroAutoStartFocus) private var pomodoroAutoStartFocus
     @Default(.pomodoroCycleBeforeLongBreak) private var pomodoroCycleBeforeLongBreak
     @Default(.pomodoroClosedNotchDisplayMode) private var pomodoroClosedNotchDisplayMode
+    @Default(.pomodoroTickSound) private var pomodoroTickSound
+    @Default(.pomodoroEndSound) private var pomodoroEndSound
 
     var body: some View {
         Form {
@@ -1101,6 +1103,56 @@ struct PomodoroSettings: View {
                 Text("Closed Notch")
             } footer: {
                 Text("Choose whether Pomodoro is hidden, replaces music visualization with countdown percent, or appears in sneak peek as a compact countdown.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section {
+                HStack {
+                    Picker("Countdown ticking", selection: $pomodoroTickSound) {
+                        ForEach(PomodoroTickSound.allCases) { sound in
+                            Text(sound.title).tag(sound)
+                        }
+                    }
+
+                    Spacer(minLength: 8)
+
+                    Button("Play") {
+                        guard let fileName = pomodoroTickSound.fileName else { return }
+                        AudioPlayer().play(fileName: fileName, fileExtension: "mp3", subdirectory: "sounds")
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(pomodoroTickSound == .off)
+                }
+            } header: {
+                Text("Countdown ticking")
+            } footer: {
+                Text("Plays a ticking sound during the last 5 seconds of focus/break.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section {
+                HStack {
+                    Picker("End sound", selection: $pomodoroEndSound) {
+                        ForEach(PomodoroEndSound.allCases) { sound in
+                            Text(sound.title).tag(sound)
+                        }
+                    }
+
+                    Spacer(minLength: 8)
+
+                    Button("Play") {
+                        guard let fileName = pomodoroEndSound.fileName else { return }
+                        AudioPlayer().play(fileName: fileName, fileExtension: "mp3", subdirectory: "sounds")
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(pomodoroEndSound == .off)
+                }
+            } header: {
+                Text("End sound")
+            } footer: {
+                Text("Plays when focus/break ends.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

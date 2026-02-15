@@ -46,6 +46,9 @@ final class PomodoroManager: ObservableObject {
     private var phaseEndDate: Date?
     private var tickCancellable: AnyCancellable?
 
+    private let audioPlayer = AudioPlayer()
+    private var didPlayCountdownSoundForPhase: Bool = false
+
     private init() {
         restorePersistedSession()
 
@@ -98,6 +101,7 @@ final class PomodoroManager: ObservableObject {
         remainingTime = pausedRemaining
         phaseEndDate = nil
         state = .paused
+        didPlayCountdownSoundForPhase = false
         stopTicker()
         persistSession()
     }
@@ -117,11 +121,13 @@ final class PomodoroManager: ObservableObject {
         phaseEndDate = nil
         pausedRemaining = duration(for: .focus)
         remainingTime = pausedRemaining
+        didPlayCountdownSoundForPhase = false
         stopTicker()
         persistSession()
     }
 
     func skip() {
+        playEndSoundIfEnabled()
         completeCurrentPhase()
     }
 
@@ -130,6 +136,7 @@ final class PomodoroManager: ObservableObject {
         let phaseDuration = duration(for: phase)
         remainingTime = phaseDuration
         pausedRemaining = phaseDuration
+        didPlayCountdownSoundForPhase = false
 
         if startImmediately {
             state = .running
@@ -182,7 +189,20 @@ final class PomodoroManager: ObservableObject {
         let current = currentRemaining()
         remainingTime = current
 
+#if DEBUG
+        let debugSecondsLeft = Int(ceil(max(0, current)))
+        if debugSecondsLeft <= 6 {
+            print("⏱️ [Pomodoro] phase=\(phase.rawValue) remaining=\(debugSecondsLeft)s")
+        }
+#endif
+
+        playTickSoundIfNeeded(remaining: current)
+
         if current <= 0 {
+#if DEBUG
+            print("✅ [Pomodoro] Phase completed: \(phase.rawValue). Playing end sound.")
+#endif
+            playEndSoundIfEnabled()
             completeCurrentPhase()
             return
         }
@@ -206,6 +226,27 @@ final class PomodoroManager: ObservableObject {
             phase: .focus,
             startImmediately: Defaults[.pomodoroAutoStartFocus]
         )
+    }
+
+    private func playTickSoundIfNeeded(remaining: TimeInterval) {
+        guard let fileName = Defaults[.pomodoroTickSound].fileName else { return }
+
+        let secondsLeft = Int(ceil(max(0, remaining)))
+        guard secondsLeft == 6 else { return }
+        guard !didPlayCountdownSoundForPhase else { return }
+        didPlayCountdownSoundForPhase = true
+#if DEBUG
+        print("🔔 [Pomodoro] Countdown sound at 6s left: \(fileName).mp3")
+#endif
+        audioPlayer.play(fileName: fileName, fileExtension: "mp3", subdirectory: "sounds")
+    }
+
+    private func playEndSoundIfEnabled() {
+        guard let fileName = Defaults[.pomodoroEndSound].fileName else { return }
+#if DEBUG
+        print("🔊 [Pomodoro] End sound: \(fileName).mp3")
+#endif
+        audioPlayer.play(fileName: fileName, fileExtension: "mp3", subdirectory: "sounds")
     }
 
     private func persistSession() {

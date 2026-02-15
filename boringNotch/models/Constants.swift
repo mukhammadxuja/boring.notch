@@ -25,6 +25,66 @@ struct CustomVisualizer: Codable, Hashable, Equatable, Defaults.Serializable {
     var speed: CGFloat = 1.0
 }
 
+enum PomodoroTickSound: String, CaseIterable, Identifiable, Defaults.Serializable {
+    case off
+    case clock1
+    case clock2
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .off:
+            return "Off"
+        case .clock1:
+            return "Clock 1"
+        case .clock2:
+            return "Clock 2"
+        }
+    }
+
+    var fileName: String? {
+        switch self {
+        case .off:
+            return nil
+        case .clock1:
+            return "clock1"
+        case .clock2:
+            return "clock2"
+        }
+    }
+}
+
+enum PomodoroEndSound: String, CaseIterable, Identifiable, Defaults.Serializable {
+    case off
+    case end1
+    case end2
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .off:
+            return "Off"
+        case .end1:
+            return "End 1"
+        case .end2:
+            return "End 2"
+        }
+    }
+
+    var fileName: String? {
+        switch self {
+        case .off:
+            return nil
+        case .end1:
+            return "end1"
+        case .end2:
+            return "end2"
+        }
+    }
+}
+
 enum CalendarSelectionState: Codable, Defaults.Serializable {
     case all
     case selected(Set<String>)
@@ -210,6 +270,8 @@ extension Defaults.Keys {
 
     // MARK: Pomodoro
     static let pomodoroShowMenuBarIcon = Key<Bool>("pomodoroShowMenuBarIcon", default: true)
+    static let pomodoroTickSound = Key<PomodoroTickSound>("pomodoroTickSound", default: .clock1)
+    static let pomodoroEndSound = Key<PomodoroEndSound>("pomodoroEndSound", default: .end1)
     static let pomodoroFocusMinutes = Key<Int>("pomodoroFocusMinutes", default: 25)
     static let pomodoroShortBreakMinutes = Key<Int>("pomodoroShortBreakMinutes", default: 5)
     static let pomodoroLongBreakMinutes = Key<Int>("pomodoroLongBreakMinutes", default: 15)

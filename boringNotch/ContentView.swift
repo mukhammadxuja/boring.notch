@@ -632,7 +632,7 @@ struct ContentView: View {
                         .stroke(Color.white.opacity(0.22), lineWidth: 2)
 
                     Circle()
-                        .trim(from: 0, to: max(0.02, 1 - pomodoroManager.progress))
+                        .trim(from: 0, to: max(0.02, 1 - min(max(pomodoroManager.progress, 0), 1)))
                         .stroke(
                             Color.effectiveAccent,
                             style: StrokeStyle(lineWidth: 2.6, lineCap: .round)
