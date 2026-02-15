@@ -38,9 +38,15 @@ enum HideNotchOption: String, Defaults.Serializable {
 
 enum PomodoroClosedNotchDisplayMode: String, CaseIterable, Identifiable, Defaults.Serializable {
     case off
+    // Legacy values kept for compatibility with already-saved defaults
     case countOnly = "count_only"
     case controlsAndCount = "controls+count"
     case replaceMusicVisual = "replace_music_visual"
+    case showInSneakPeek = "show_in_sneak_peek"
+
+    static var allCases: [PomodoroClosedNotchDisplayMode] {
+        [.off, .replaceMusicVisual, .showInSneakPeek]
+    }
 
     var id: String { rawValue }
 
@@ -49,11 +55,13 @@ enum PomodoroClosedNotchDisplayMode: String, CaseIterable, Identifiable, Default
         case .off:
             return "Off"
         case .countOnly:
-            return "Show count only"
+            return "Show in sneak peek"
         case .controlsAndCount:
-            return "Show controls + repeat count"
+            return "Show in sneak peek"
         case .replaceMusicVisual:
-            return "Replace music visualization with countdown"
+            return "Replace music visualization with countdown percent"
+        case .showInSneakPeek:
+            return "Show in sneak peek"
         }
     }
 }

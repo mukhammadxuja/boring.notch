@@ -1104,7 +1104,7 @@ struct PomodoroSettings: View {
             } header: {
                 Text("Closed Notch")
             } footer: {
-                Text("Choose whether countdown replaces music visualization or appears in sneak peek with repeat count and play/pause controls.")
+                Text("Choose whether Pomodoro is hidden, replaces music visualization with countdown percent, or appears in sneak peek as a compact countdown.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

@@ -133,14 +133,7 @@ struct ContentView: View {
         guard !coordinator.sneakPeek.show else { return false }
         return pomodoroClosedNotchDisplayMode == .countOnly
             || pomodoroClosedNotchDisplayMode == .controlsAndCount
-    }
-
-    private var pomodoroClosedShowsControls: Bool {
-        pomodoroClosedNotchDisplayMode == .controlsAndCount
-    }
-
-    private var pomodoroClosedShowsRepeatCount: Bool {
-        pomodoroClosedNotchDisplayMode == .controlsAndCount
+            || pomodoroClosedNotchDisplayMode == .showInSneakPeek
     }
 
     private func updateOpenNotchWidth(animated: Bool = true) {
@@ -391,8 +384,6 @@ struct ContentView: View {
                               .transition(.opacity)
                       } else if shouldReplaceMusicClosedVisual {
                           PomodoroClosedNotchView(
-                              showControls: false,
-                              showRepeatCount: false,
                               compact: false
                           )
                       } else if (!coordinator.expandingView.show || coordinator.expandingView.type == .music) && vm.notchState == .closed && (musicManager.isPlaying || !musicManager.isPlayerIdle) && coordinator.musicLiveActivityEnabled && !vm.hideOnClosed {
@@ -446,8 +437,6 @@ struct ContentView: View {
 
                       if shouldShowPomodoroSneakPeekStrip {
                           PomodoroClosedNotchView(
-                              showControls: pomodoroClosedShowsControls,
-                              showRepeatCount: pomodoroClosedShowsRepeatCount,
                               compact: true
                           )
                           .padding(.bottom, 10)
@@ -612,86 +601,52 @@ struct ContentView: View {
     }
 
     @ViewBuilder
-    func PomodoroClosedNotchView(
-        showControls: Bool,
-        showRepeatCount: Bool,
-        compact: Bool
-    ) -> some View {
+    func PomodoroClosedNotchView(compact: Bool) -> some View {
         if compact {
             HStack(spacing: 8) {
                 Image(systemName: "timer")
-                    .font(.caption)
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.effectiveAccent)
 
                 Text(pomodoroManager.formattedRemainingTime)
-                    .font(.caption.weight(.semibold))
+                    .font(.subheadline.weight(.semibold))
                     .monospacedDigit()
                     .foregroundStyle(.white)
-
-                if showRepeatCount {
-                    Text(pomodoroManager.cycleText)
-                        .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.75))
-                        .lineLimit(1)
-                }
-
-                if showControls {
-                    Button {
-                        pomodoroManager.togglePlayPause()
-                    } label: {
-                        Image(systemName: pomodoroManager.isRunning ? "pause.fill" : "play.fill")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(Color.effectiveAccent)
-                    }
-                    .buttonStyle(.plain)
-                }
             }
             .frame(maxWidth: .infinity, alignment: .center)
         } else {
-            HStack(spacing: 0) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: MusicPlayerImageSizes.cornerRadiusInset.closed)
-                        .fill(Color.effectiveAccentBackground)
-                    Image(systemName: "timer")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(Color.effectiveAccent)
-                }
-                .frame(
-                    width: max(0, vm.effectiveClosedNotchHeight - 12),
-                    height: max(0, vm.effectiveClosedNotchHeight - 12)
-                )
-
-                Rectangle()
-                    .fill(.black)
-                    .overlay(
-                        HStack(spacing: 10) {
-                            Text(pomodoroManager.formattedRemainingTime)
-                                .font(.callout.weight(.semibold))
-                                .monospacedDigit()
-                                .foregroundStyle(.white)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.82)
-                            if showRepeatCount {
-                                Text(pomodoroManager.cycleText)
-                                    .font(.caption2)
-                                    .foregroundStyle(.gray)
-                                    .lineLimit(1)
-                            }
-                        }
-                        .padding(.horizontal, 8)
+            HStack(spacing: 10) {
+                Image(systemName: "timer")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Color.effectiveAccent)
+                    .frame(
+                        width: max(0, vm.effectiveClosedNotchHeight - 12),
+                        height: max(0, vm.effectiveClosedNotchHeight - 12)
                     )
+
+                Text(pomodoroManager.formattedRemainingTime)
+                    .font(.callout.weight(.semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.82)
                     .frame(width: pomodoroReplaceMiddleWidth)
 
                 ZStack {
-                    RoundedRectangle(cornerRadius: MusicPlayerImageSizes.cornerRadiusInset.closed)
-                        .fill(Color.effectiveAccentBackground)
-                    Text("\(Int((1 - pomodoroManager.progress) * 100))")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(Color.effectiveAccent)
+                    Circle()
+                        .stroke(Color.white.opacity(0.22), lineWidth: 2)
+
+                    Circle()
+                        .trim(from: 0, to: max(0.02, 1 - pomodoroManager.progress))
+                        .stroke(
+                            Color.effectiveAccent,
+                            style: StrokeStyle(lineWidth: 2.6, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
                 }
                 .frame(
-                    width: max(0, vm.effectiveClosedNotchHeight - 12),
-                    height: max(0, vm.effectiveClosedNotchHeight - 12)
+                    width: max(0, vm.effectiveClosedNotchHeight - 16),
+                    height: max(0, vm.effectiveClosedNotchHeight - 16)
                 )
             }
             .frame(height: vm.effectiveClosedNotchHeight, alignment: .center)
