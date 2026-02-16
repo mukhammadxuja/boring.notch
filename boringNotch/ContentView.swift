@@ -40,6 +40,7 @@ struct ContentView: View {
     // Hover states for closed notch music areas
     @State private var isCoverHovering: Bool = false
     @State private var isVisualizerHovering: Bool = false
+    @State private var showCoverHoverMusicDetails: Bool = false
 
     @Namespace var albumArtNamespace
 
@@ -441,7 +442,9 @@ struct ContentView: View {
                           }
                           // Old sneak peek music
                           else if coordinator.sneakPeek.type == .music {
-                              if vm.notchState == .closed && !vm.hideOnClosed && Defaults[.sneakPeekStyles] == .standard {
+                              if vm.notchState == .closed && !vm.hideOnClosed
+                                    && (Defaults[.sneakPeekStyles] == .standard || showCoverHoverMusicDetails)
+                              {
                                   HStack(alignment: .center) {
                                       Image(systemName: "music.note")
                                       GeometryReader { geo in
@@ -456,7 +459,7 @@ struct ContentView: View {
 
                   }
               }
-              .conditionalModifier((coordinator.sneakPeek.show && (coordinator.sneakPeek.type == .music) && vm.notchState == .closed && !vm.hideOnClosed && Defaults[.sneakPeekStyles] == .standard) || (coordinator.sneakPeek.show && (coordinator.sneakPeek.type != .music) && (vm.notchState == .closed))) { view in
+              .conditionalModifier((coordinator.sneakPeek.show && (coordinator.sneakPeek.type == .music) && vm.notchState == .closed && !vm.hideOnClosed && (Defaults[.sneakPeekStyles] == .standard || showCoverHoverMusicDetails)) || (coordinator.sneakPeek.show && (coordinator.sneakPeek.type != .music) && (vm.notchState == .closed))) { view in
                   view
                       .fixedSize()
               }
@@ -543,11 +546,12 @@ struct ContentView: View {
             .onHover { hovering in
                 isCoverHovering = hovering
                 if hovering && vm.notchState == .closed && !musicManager.isPlayerIdle {
+                    showCoverHoverMusicDetails = true
                     // Show sneak peek from bottom (standard style)
                     coordinator.toggleSneakPeek(
                         status: true,
                         type: .music,
-                        duration: 0
+                        duration: 60
                     )
                 } else if !hovering {
                     // Dismiss sneak peek after a short delay
@@ -555,6 +559,7 @@ struct ContentView: View {
                         try? await Task.sleep(for: .milliseconds(600))
                         await MainActor.run {
                             if !isCoverHovering {
+                                showCoverHoverMusicDetails = false
                                 coordinator.toggleSneakPeek(status: false, type: .music, duration: 0)
                             }
                         }
@@ -644,15 +649,17 @@ struct ContentView: View {
                 }
 
                 // Hover: play/pause icon replaces visualizer
-                if isVisualizerHovering && !showGestureNext && musicManager.isPlaying {
+                if isVisualizerHovering && !showGestureNext {
                     Button {
                         MusicManager.shared.togglePlay()
                     } label: {
                         Image(systemName: musicManager.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: coverSize * 0.45, weight: .bold))
+                            .font(.system(size: coverSize * 0.62, weight: .bold))
                             .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                     }
                     .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                     .transition(.opacity.animation(.easeInOut(duration: 0.2)))
                 }
             }
@@ -670,7 +677,7 @@ struct ContentView: View {
             )
             .onHover { hovering in
                 withAnimation(.easeInOut(duration: 0.2)) {
-                    isVisualizerHovering = hovering && musicManager.isPlaying && vm.notchState == .closed
+                    isVisualizerHovering = hovering && !musicManager.isPlayerIdle && vm.notchState == .closed
                 }
             }
         }
