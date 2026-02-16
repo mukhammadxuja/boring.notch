@@ -1102,7 +1102,7 @@ struct PomodoroSettings: View {
             } header: {
                 Text("Closed Notch")
             } footer: {
-                Text("Choose whether Pomodoro is hidden, replaces music visualization with countdown percent, or appears in sneak peek as a compact countdown.")
+                Text("Choose whether Pomodoro is hidden or shown inline in the closed notch by replacing the music cover/visualizer area with countdown and controls.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

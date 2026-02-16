@@ -111,7 +111,7 @@ enum PomodoroClosedNotchDisplayMode: String, CaseIterable, Identifiable, Default
     case showInSneakPeek = "show_in_sneak_peek"
 
     static var allCases: [PomodoroClosedNotchDisplayMode] {
-        [.off, .replaceMusicVisual, .showInSneakPeek]
+        [.off, .replaceMusicVisual]
     }
 
     var id: String { rawValue }
@@ -121,13 +121,13 @@ enum PomodoroClosedNotchDisplayMode: String, CaseIterable, Identifiable, Default
         case .off:
             return "Off"
         case .countOnly:
-            return "Show in sneak peek"
+            return "Inline"
         case .controlsAndCount:
-            return "Show in sneak peek"
+            return "Inline"
         case .replaceMusicVisual:
-            return "Replace music visualization with countdown percent"
+            return "Inline"
         case .showInSneakPeek:
-            return "Show in sneak peek"
+            return "Inline"
         }
     }
 }
