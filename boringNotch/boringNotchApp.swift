@@ -197,10 +197,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     @MainActor
     private func createLockScreenPlayerWindow(for screen: NSScreen) -> NSWindow {
         let rect = NSRect(origin: .zero, size: lockScreenPlayerSize)
-        let styleMask: NSWindow.StyleMask = [.borderless, .nonactivatingPanel, .utilityWindow, .hudWindow]
+        let styleMask: NSWindow.StyleMask = [.borderless, .nonactivatingPanel, .utilityWindow]
         let window = BoringNotchSkyLightWindow(contentRect: rect, styleMask: styleMask, backing: .buffered, defer: false)
 
-        window.contentView = NSHostingView(rootView: LockScreenPasscodePlayerView())
+        let hostingView = NSHostingView(rootView: LockScreenPasscodePlayerView())
+        hostingView.wantsLayer = true
+        hostingView.layer?.backgroundColor = CGColor.clear
+        window.contentView = hostingView
         window.isOpaque = false
         window.backgroundColor = .clear
         window.hasShadow = false
@@ -1129,8 +1132,6 @@ private struct LockScreenPasscodePlayerView: View {
 
     var body: some View {
         ZStack {
-            Color.clear
-
             if shouldShowPlayer {
                 VStack(alignment: .leading, spacing: 7) {
                     topRow
@@ -1148,7 +1149,6 @@ private struct LockScreenPasscodePlayerView: View {
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                 .shadow(color: .black.opacity(0.4), radius: 22, y: 10)
-                .padding(.vertical, 16)
                 .transition(.opacity)
             }
         }

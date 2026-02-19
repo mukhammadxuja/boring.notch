@@ -154,10 +154,20 @@ final class NowPlayingController: ObservableObject, MediaControllerProtocol {
     }
     
     func toggleRepeat() async {
-        // MRMediaRemoteSendCommandFunction(7, nil)
-        let newRepeatMode = (playbackState.repeatMode == .off) ? 3 : (playbackState.repeatMode.rawValue - 1)
-        playbackState.repeatMode = RepeatMode(rawValue: newRepeatMode) ?? .off
-        MRMediaRemoteSetRepeatModeFunction(newRepeatMode)
+        let nextMode: RepeatMode
+        switch playbackState.repeatMode {
+        case .off: nextMode = .all
+        case .all: nextMode = .one
+        case .one: nextMode = .off
+        }
+        playbackState.repeatMode = nextMode
+        let mrValue: Int
+        switch nextMode {
+        case .off: mrValue = 0
+        case .one: mrValue = 1
+        case .all: mrValue = 2
+        }
+        MRMediaRemoteSetRepeatModeFunction(mrValue)
     }
     
     func setVolume(_ level: Double) async {
